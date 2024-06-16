@@ -1,5 +1,6 @@
 # Start quickly.
-``` cargo run test1.o.elf
+``` 
+cargo run test1.o.elf
 ```
 
 
