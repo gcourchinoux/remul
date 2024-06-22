@@ -26,11 +26,10 @@ use crate::ElfGaspard::gaspard_elf;
 
 fn main() {
 
-println!( "Remul  Copyright (C) 2024  Gaspard COURCHINOUX \n
+    println!( "Remul  Copyright (C) 2024  Gaspard COURCHINOUX \n
 This program comes with ABSOLUTELY NO WARRANTY;\n
 This is free software, and you are welcome to redistribute it \n
 under certain conditions; ");
-
 
 let args : Vec<String> = env::args().collect();
 gaspard_elf(args);

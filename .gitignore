@@ -3,3 +3,5 @@ vmlinux
 
 afaire.txt
 Cargo.lock
+
+/pkg

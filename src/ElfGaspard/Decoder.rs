@@ -19,8 +19,6 @@
 
 
 
-use gaspard_emul::lib;
-use gaspard_emul::lib::*;
  use core::mem::size_of_val;
 const MATCH_ADD: u32 = 0x33;
 const MASK_ADD: u32 = 0xfe00707f;
@@ -4043,7 +4041,7 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
      * */
     let imm_final : i32  = (imm | 0x1FFFFF << 12) as i32; // on suite la doc qui me dit que je dois me positionner à partir de 12 et à partir de là bourrer sur 20 bits :
     
-
+        println!("beq immediat final {:x}",imm_final);
 
         let rs1 = instr >> 15 & 0b1111;
         let rs2 = instr >> 20 & 0b1111;
@@ -4055,9 +4053,10 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
     if self.equal == true {
 
 
-        self.regs[32] = (self.regs[32]+imm_final as u64) ; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
+       // self.regs[32] = (self.regs[32]+imm_final as u64) ; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
 
-
+        self.regs[32] = (self.regs[32].wrapping_add(imm_final as u64)as i64) .abs() as u64 -4;
+        println!("final regs[32] {:x}",self.regs[32]);
     }
 
 
@@ -4122,8 +4121,8 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
 
 
 
-       self. regs[32] = self.regs[32]+imm_final as u64; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
-
+        self.regs[32] = (self.regs[32].wrapping_add(imm_final as u64)as i64) .abs() as u64 -4;
+        println!("final regs[32] {:x}",self.regs[32]);
 
 
     }
@@ -4178,7 +4177,8 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
 
 
 
-       self. regs[32] = self.regs[32]+imm_final as u64; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
+        self.regs[32] = (self.regs[32].wrapping_add(imm_final as u64)as i64) .abs() as u64 -4;
+        println!("final regs[32] {:x}",self.regs[32]);
 
 
 
@@ -4241,7 +4241,8 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
 
 
 
-       self. regs[32] = self.regs[32]+imm_final as u64; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
+        self.regs[32] = (self.regs[32].wrapping_add(imm_final as u64)as i64) .abs() as u64 -4;
+        println!("final regs[32] {:x}",self.regs[32]);
 
 
 
@@ -4295,7 +4296,8 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
 
 
 
-       self. regs[32] = self.regs[32]+imm_final as u64; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
+        self.regs[32] = (self.regs[32].wrapping_add(imm_final as u64)as i64) .abs() as u64 -4;
+        println!("final regs[32] {:x}",self.regs[32]);
 
 
 
@@ -4365,7 +4367,8 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
 
 
 
-       self. regs[32] = self.regs[32]+imm_final as u64; // PAS SUR DE LA SOLUTION le signed extend n'a pas été fait );
+        self.regs[32] = (self.regs[32].wrapping_add(imm_final as u64)as i64) .abs() as u64 -4;
+        println!("final regs[32] {:x}",self.regs[32]);
 
 
 
@@ -4403,8 +4406,7 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
     self.debug_gaspard("C_ADDI16SP ");
     
     
-    let imm : i8 = EXTRACT_CITYPE_ADDI16SP_IMM(instr) as i8;
-    println!("{}",imm);
+    //let imm : i8 = EXTRACT_CITYPE_ADDI16SP_IMM(instr) as i8;
     
     
    return true;
@@ -5798,7 +5800,7 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
     self.regs[rd as usize] = self.regs[32];
     self.adress_debut_fonction = self.regs[32]; // très important     
 
-    self.regs[32] = (self.adress_debut_fonction.wrapping_add(imm_signd_final as u64)as i64) .abs() as u64;
+    self.regs[32] = (self.adress_debut_fonction.wrapping_add(imm_signd_final as u64)as i64) .abs() as u64 -4;
 
   
     //self.regs[32] = (self.adress_debut_fonction as u64) + (imm_signd_final as u64); 
@@ -5824,7 +5826,7 @@ self.regs[rd as usize] = self.regs[rs1 as usize] & self.regs[rs2 as usize];
 
         if rs1 == 1 && rd == 0 && imm ==0{
 // retour à le sous routine
-            self.regs[32] = self.adress_debut_fonction ;
+            self.regs[32] = self.adress_debut_fonction + 4 ;// incrementer sinon on revient sur le même branchement c'est très con 
 
         } else {
 
