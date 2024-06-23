@@ -24,8 +24,38 @@ use elf::section::SectionHeader;
 
 use std::any::type_name;
 mod Decoder;
-
 use crate::ElfGaspard::Decoder::DecoderStruct;
+
+use wasm_bindgen::prelude::*;
+
+
+
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
+
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+
+
+
 /// adress = adresse de démarrage
 fn open_data(adress: u64,data: &[u8],sh_addr:u64) {
 
@@ -65,7 +95,34 @@ open_data(adress,data,text.sh_addr)
 
 
 }
+pub fn open_elf_web(file : &[u8]) {
 
+    console_log!("file pas encore scanner {:x} ",file[0]);
+
+    let filex = ElfBytes::<AnyEndian>::minimal_parse(file).expect("Open test1");
+    console_log!("fichier ok ");
+
+    // Get the ELF file's build-id
+    let text: SectionHeader = filex
+        .section_header_by_name(".text")
+        .expect("section table should be parseable")
+        .expect("file should have a .note.ABI-tag section");
+    
+    
+    let data = filex.section_data(&text).unwrap();
+    
+    // vérifier que c'est bien riscv 
+    
+    
+    let adress = filex.ehdr.e_entry;
+   // console_log!("adresse de demarrage {:x}",adress);
+    
+    let (data,option) = data;
+    open_data(adress,data,text.sh_addr)
+    
+    
+    }
+    
 
 pub fn gaspard_elf(argv: Vec<String>) {
 

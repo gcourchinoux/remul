@@ -14,7 +14,7 @@ web-sys = { version = "0.3.69", features = ['Document',
   'HtmlElement',
   'Node',
   'Window',] }
-
+js-sys = "0.3.69"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

@@ -1,7 +1,10 @@
 
 use wasm_bindgen::prelude::*;
+mod ElfGaspard;
 
+use crate::ElfGaspard::open_elf_web;
 
+use js_sys::Uint8Array;
 
 // Called when the wasm module is instantiated
 #[wasm_bindgen(start)]
@@ -78,10 +81,15 @@ console_log!("{}",a);
 
 #[wasm_bindgen]
 
-pub fn ouvrir_fichier(a: &str) {
+pub fn ouvrir_fichier(a: &[u8] ) {
 
-console_log!("le fichier suivant va être ouvert");
-let ret = down_file(a,"tmp.elf");
+
+
+console_log!("print slice {:x}",a[0]);
+open_elf_web(a);
+
+
+
 }
 
 #[wasm_bindgen]
