@@ -19,7 +19,6 @@
 
 
 use wasm_bindgen::prelude::*;
-
 #[wasm_bindgen]
 extern "C" {
     // Use `js_namespace` here to bind `console.log(..)` instead of just
@@ -42,6 +41,20 @@ macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+#[wasm_bindgen]
+
+pub fn add_instr_to_dom(s :&str) -> Result<(), JsValue> {
+  
+    let window = web_sys::window().expect("no global `window` exists");
+    let document = window.document().expect("should have a document on window");
+    let body = document.body().expect("document should have a body");
+
+    let val = document.create_element("p")?;
+    val.set_inner_html(s);
+
+    body.append_child(&val)?;
+    Ok(())
 }
 
  use core::mem::size_of_val;
@@ -3403,8 +3416,9 @@ less_than : bool,
 
 adress_debut_fonction : u64,
 adress_begin_section : u64,
-
-
+actual_x : u16,
+actual_y : u16,
+data_video : Vec<u8>,
 }
 
 impl<'a> DecoderStruct<'_> {
@@ -3426,7 +3440,9 @@ impl<'a> DecoderStruct<'_> {
                 less_than : false,
                 adress_debut_fonction: adressbegin,
                 adress_begin_section: adress_begin_section,
-                
+                actual_x: 0,
+                actual_y: 0,
+                data_video: vec![0; 800 * 600 * 3],
             }
         }
 
@@ -3593,7 +3609,7 @@ fn memory_write_char(&mut self,addr: u64,data : u64) {
 
 let tup = ((addr as u64), (data));
 self.memory.push(tup)  ;
-
+self.video(addr,data);
 }
 
 fn memory_write_short(&mut self,addr: u64,data : u64) {
@@ -3601,7 +3617,8 @@ fn memory_write_short(&mut self,addr: u64,data : u64) {
 
     let tup = ((addr as u64), (data));
     self.memory.push(tup)  ;
-    
+    self.video(addr,data);
+
     }
     
 fn memory_write_long(&mut self,addr: u64,data : u64) {
@@ -3609,7 +3626,8 @@ fn memory_write_long(&mut self,addr: u64,data : u64) {
 
     let tup = ((addr as u64), (data));
    self.memory.push(tup)  ;
-        
+   self.video(addr,data);
+
 }
         
 /// trouver un index avec l'adresse
@@ -3631,12 +3649,24 @@ return Some(i as u64);
 
 return Some(u64::MAX);
 }
+
 fn debug_gaspard(&mut self,x: &str ) {
 
 
 println!("{}",x);
-//console_log!("{}",x);
+console_log!("{}",x);
+
+
+add_instr_to_dom(x);
+
+
+
+
 }
+
+
+
+
 fn extract_instr_16 (&mut self,instr :u32) -> (u16,u16) {
 
 
@@ -10301,8 +10331,18 @@ return false;
 
 
 }
-fn memory_return_u64(&mut self,adress :u64) -> Option<u64> {
 
+pub fn init_video() {
+
+   // let width = 800 as usize;
+ //   let height = 600 as usize;
+
+    // Créer un tableau de pixels (RGBA)
+   // self.data_video = vec![0; width * height * 3];
+
+
+}
+fn memory_return_u64(&mut self,adress :u64) -> Option<u64> {
 
 
 
@@ -10310,6 +10350,7 @@ fn memory_return_u64(&mut self,adress :u64) -> Option<u64> {
     for (adresse,data) in &self.memory {
     
     if adress == *adresse {
+
         return Some(*data); 
     
     
@@ -10334,6 +10375,7 @@ fn memory_return_u16(&mut self,adress :u64) -> Option<u16> {
 for (adresse,data)  in &self.memory {
 
 if adress == *adresse {
+
     return Some(*data as u16); 
 
 
@@ -10362,6 +10404,7 @@ fn memory_return_u8(&mut self,adress :u64) -> Option<u8> {
 for (adresse,data) in &self.memory {
 
 if adress == *adresse {
+
     return Some(*data as u8); 
 
 
@@ -10386,6 +10429,7 @@ fn memory_return_u32(&mut self,adress :u64) -> Option<u32> {
 for (adresse,data) in &self.memory {
 
 if adress == *adresse {
+
     return Some(*data as u32); 
 
 
@@ -10399,11 +10443,46 @@ return None;
 
 
 }
+
+fn draw_framebuffer(&mut self,rouge :u8,vert :u8,bleu :u8 ) {
+
+
+
+}
+fn video(&mut self,adress :u64,data :u64) {
+
+
+    // vérifier la video 
+    if adress ==0xA0000 {
+
+        // exytrazite les positions
+
+         self.actual_x = (data & 0xffff) as u16;
+
+         self.actual_y =( data>> 16 & 0xffff) as u16;
+
+
+
+
+    } else if adress == 0xA0001 {
+
+        let color = data;
+
+        println!("x et y {:x} {:x} couleur {:x}",self.actual_x,self.actual_y,color);
+        let rouge = (color & 0xff) as u8;
+
+        let vert = (color  >> 8 & 0xff) as u8;
+        let bleu =( color  >>16  & 0xff) as u8;
+
+        self.draw_framebuffer(rouge,vert,bleu); // rouge vert bleu
+    }
+
+}
 /// Il y a 1426 instructions riscv
 fn run(&mut self) {
 
 
-
+  //  init_video();
 let index_demarrage = self.find_data_with_addr(self.adress_begin).unwrap(); // fo,nctionne toujours 
 
 
@@ -10502,7 +10581,7 @@ pub fn init(&mut self){
 
 
 self.copy();
-///self.debug_print();
+//self.debug_print();
 self.run();
 
 
@@ -10511,6 +10590,7 @@ fn sign_extend(&mut self,x: i32, nbits: u32) -> i32 {
 	let notherbits = size_of_val(&x) as u32 * 8 - nbits;
   	x.wrapping_shl(notherbits).wrapping_shr(notherbits)
 }
+
 
 
 

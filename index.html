@@ -2,31 +2,37 @@
   <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
   </head>
+  <script src="jslinux.js"></script>
+  
+  
   <body>
-
-
+    <link rel="stylesheet" href="index.css">
+    <div class="container">
+      <canvas id="framebuffer" width="800" height="600"></canvas>
+  </div>
     <input type="file" id="fileInput"/>
-<script  type="module">
+    <script type="module">
+        import init, { process_file_data } from './pkg/gaspard_emul.js';
 
-import init, { add,print_gaspard,ouvrir_fichier } from './pkg/gaspard_emul.js';
+        async function run() {
+            await init();
 
-
-document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
+            document.getElementById('fileInput').addEventListener('change', (event) => {
+                const file = event.target.files[0];
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const arrayBuffer = e.target.result;
-                    const bytes = new Uint8Array(arrayBuffer);
-                    console.log(bytes);
-                };
-                reader.readAsArrayBuffer(file);
-                const arr = new Uint8Array(file);
-                ouvrir_fichier(arr);
 
-            }
-        });
-</script>
+                reader.onload = () => {
+                    const arrayBuffer = reader.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    process_file_data(uint8Array);
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        run();
+    </script>
     <!-- Note the usage of `type=module` here as this is an ES6 module -->
     <script type="module">
 
@@ -77,6 +83,6 @@ document.getElementById('fileInput').addEventListener('change', function(event) 
 
       run();
     </script>
-   
+   <!--  diviser en deux : partie décompilateur partie image  -->
   </body>
 </html>

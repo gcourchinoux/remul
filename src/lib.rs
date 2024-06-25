@@ -93,6 +93,14 @@ open_elf_web(a);
 }
 
 #[wasm_bindgen]
+pub fn process_file_data(data: &[u8]) {
+    // Faites quelque chose avec les données du fichier, par exemple, les afficher
+    console_log!("{}",&format!("Received file data: {:?}", data));
+    open_elf_web(data);
+
+}
+
+#[wasm_bindgen]
 
 pub fn exemple_1(a: &str) {
 
